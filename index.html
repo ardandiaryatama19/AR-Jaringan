@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html lang="id">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,183 +7,257 @@
 
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+    <script
+      type="module"
+      src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"
+    ></script>
 
     <style>
       body {
         margin: 0;
         overflow: hidden;
+        font-family: system-ui, sans-serif;
       }
       .ar-container {
         position: absolute;
-        top: 0;
-        left: 0;
+        inset: 0;
         width: 100%;
         height: 100%;
         overflow: hidden;
       }
-      #status {
+
+      #hint {
         position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        z-index: 9999;
-        background: rgba(0, 0, 0, 0.7);
-        color: #0f0;
-        font: 12px monospace;
-        padding: 6px;
-        white-space: pre-wrap;
+        top: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 50;
+        background: rgba(0, 0, 0, 0.6);
+        color: #fff;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 14px;
         pointer-events: none;
+        white-space: nowrap;
+      }
+
+      #viewer {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        display: flex;
+        flex-direction: column;
+        background: rgba(10, 15, 25, 0.72);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        color: #fff;
+      }
+      #viewer[hidden] {
+        display: none;
+      }
+
+      .v-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 14px 16px 6px;
+      }
+      .v-head h1 {
+        margin: 0;
+        font-size: 20px;
+      }
+      .v-head p {
+        margin: 4px 0 0;
+        font-size: 13px;
+        opacity: 0.85;
+        line-height: 1.4;
+      }
+
+      #btnClose {
+        flex-shrink: 0;
+        border: 0;
+        border-radius: 20px;
+        background: #fff;
+        color: #111;
+        font-weight: 600;
+        padding: 10px 16px;
+        font-size: 14px;
+      }
+
+      model-viewer {
+        flex: 1;
+        width: 100%;
+        min-height: 0;
+        --poster-color: transparent;
+        background: transparent;
+      }
+      .v-foot {
+        text-align: center;
+        font-size: 12px;
+        opacity: 0.75;
+        padding: 6px 0 14px;
+      }
+      #arBtn {
+        position: absolute;
+        bottom: 44px;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 0;
+        border-radius: 20px;
+        background: #22c55e;
+        color: #fff;
+        padding: 10px 18px;
+        font-weight: 600;
+        font-size: 14px;
       }
     </style>
   </head>
   <body>
-    <div id="status">menunggu...</div>
+    <div id="hint">Arahkan kamera ke gambar perangkat</div>
 
     <div class="ar-container">
       <a-scene
-        mindar-image="imageTargetSrc: ./targets.mind; maxTrack: 3;"
+        mindar-image="imageTargetSrc: ./targets.mind;"
         color-space="sRGB"
         renderer="colorManagement: true, physicallyCorrectLights"
         embedded
         vr-mode-ui="enabled: false"
         device-orientation-permission-ui="enabled: false"
       >
-        <a-assets>
-          <a-asset-item id="switchModel" src="./switch.glb"></a-asset-item>
-          <a-asset-item id="routerModel" src="./router.glb"></a-asset-item>
-          <a-asset-item id="modemModel" src="./modem.glb"></a-asset-item>
-          <a-asset-item id="apModel" src="./access_point.glb"></a-asset-item>
-          <a-asset-item id="utpModel" src="./kabel_utp_stp.glb"></a-asset-item>
-          <a-asset-item
-            id="nicModel"
-            src="./network_interface_card.glb"
-          ></a-asset-item>
-          <a-asset-item id="hubModel" src="./hub.glb"></a-asset-item>
-          <a-asset-item id="fiberModel" src="./kabel_fiber.glb"></a-asset-item>
-        </a-assets>
-
         <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-        <!-- Index 0 -->
-        <a-entity mindar-image-target="targetIndex: 0">
-          <a-box color="red" scale="0.1 0.1 0.1" position="0 0 0"></a-box>
-          <a-gltf-model
-            src="#switchModel"
-            position="0 0 0"
-            scale="0.5 0.5 0.5"
-            rotation="0 180 0"
-          ></a-gltf-model>
-        </a-entity>
-
-        <!-- Index 1 -->
-        <a-entity mindar-image-target="targetIndex: 1">
-          <a-box color="red" scale="0.1 0.1 0.1" position="0 0 0"></a-box>
-          <a-gltf-model
-            src="#routerModel"
-            position="0 0 0"
-            scale="0.5 0.5 0.5"
-            rotation="0 180 0"
-          ></a-gltf-model>
-        </a-entity>
-
-        <!-- Index 2 -->
-        <a-entity mindar-image-target="targetIndex: 2">
-          <a-box color="red" scale="0.1 0.1 0.1" position="0 0 0"></a-box>
-          <a-gltf-model
-            src="#modemModel"
-            position="0 0 0"
-            scale="0.5 0.5 0.5"
-            rotation="0 180 0"
-          ></a-gltf-model>
-        </a-entity>
-
-        <!-- Index 3 -->
-        <a-entity mindar-image-target="targetIndex: 3">
-          <a-box color="red" scale="0.1 0.1 0.1" position="0 0 0"></a-box>
-          <a-gltf-model
-            src="#apModel"
-            position="0 0 0"
-            scale="0.5 0.5 0.5"
-            rotation="0 180 0"
-          ></a-gltf-model>
-        </a-entity>
-
-        <!-- Index 4 -->
-        <a-entity mindar-image-target="targetIndex: 4">
-          <a-box color="red" scale="0.1 0.1 0.1" position="0 0 0"></a-box>
-          <a-gltf-model
-            src="#utpModel"
-            position="0 0 0"
-            scale="0.5 0.5 0.5"
-            rotation="0 180 0"
-          ></a-gltf-model>
-        </a-entity>
-
-        <!-- Index 5 -->
-        <a-entity mindar-image-target="targetIndex: 5">
-          <a-box color="red" scale="0.1 0.1 0.1" position="0 0 0"></a-box>
-          <a-gltf-model
-            src="#nicModel"
-            position="0 0 0"
-            scale="0.5 0.5 0.5"
-            rotation="0 180 0"
-          ></a-gltf-model>
-        </a-entity>
-
-        <!-- Index 6 -->
-        <a-entity mindar-image-target="targetIndex: 6">
-          <a-box color="red" scale="0.1 0.1 0.1" position="0 0 0"></a-box>
-          <a-gltf-model
-            src="#hubModel"
-            position="0 0 0"
-            scale="0.5 0.5 0.5"
-            rotation="0 180 0"
-          ></a-gltf-model>
-        </a-entity>
-
-        <!-- Index 7 -->
-        <a-entity mindar-image-target="targetIndex: 7">
-          <a-box color="red" scale="0.1 0.1 0.1" position="0 0 0"></a-box>
-          <a-gltf-model
-            src="#fiberModel"
-            position="0 0 0"
-            scale="0.5 0.5 0.5"
-            rotation="0 180 0"
-          ></a-gltf-model>
-        </a-entity>
+        <!-- Urutan targetIndex = urutan gambar saat compile targets.mind -->
+        <a-entity mindar-image-target="targetIndex: 0"></a-entity>
+        <a-entity mindar-image-target="targetIndex: 1"></a-entity>
+        <a-entity mindar-image-target="targetIndex: 2"></a-entity>
+        <a-entity mindar-image-target="targetIndex: 3"></a-entity>
+        <a-entity mindar-image-target="targetIndex: 4"></a-entity>
+        <a-entity mindar-image-target="targetIndex: 5"></a-entity>
+        <a-entity mindar-image-target="targetIndex: 6"></a-entity>
+        <a-entity mindar-image-target="targetIndex: 7"></a-entity>
       </a-scene>
     </div>
 
+    <!-- Viewer 3D yang muncul setelah marker terdeteksi -->
+    <div id="viewer" hidden>
+      <div class="v-head">
+        <div>
+          <h1 id="vTitle"></h1>
+          <p id="vDesc"></p>
+        </div>
+        <button id="btnClose">Scan lagi</button>
+      </div>
+
+      <model-viewer
+        id="mv"
+        camera-controls
+        auto-rotate
+        shadow-intensity="1"
+        interaction-prompt="auto"
+        ar
+        ar-modes="scene-viewer webxr quick-look"
+        alt="Model 3D perangkat jaringan"
+      ></model-viewer>
+
+      <div class="v-foot">Geser untuk memutar · Cubit untuk zoom</div>
+    </div>
+
     <script>
-      const st = document.getElementById("status");
-      const log = (m) => {
-        st.textContent += "\n" + m;
-      };
+      // Urutan harus sama dengan targetIndex 0..7
+      const DEVICES = [
+        {
+          name: "Switch",
+          file: "switch.glb",
+          desc: "Menghubungkan banyak perangkat dalam satu jaringan lokal dan meneruskan data ke port tujuan berdasarkan alamat MAC.",
+        },
+        {
+          name: "Router",
+          file: "router.glb",
+          desc: "Menghubungkan beberapa jaringan berbeda dan menentukan jalur paket data berdasarkan alamat IP.",
+        },
+        {
+          name: "Modem",
+          file: "modem.glb",
+          desc: "Mengubah sinyal dari penyedia internet (ISP) menjadi sinyal yang bisa dipakai perangkat di jaringan, dan sebaliknya.",
+        },
+        {
+          name: "Access Point",
+          file: "access_point.glb",
+          desc: "Memancarkan sinyal Wi-Fi sehingga perangkat nirkabel dapat terhubung ke jaringan kabel.",
+        },
+        {
+          name: "Kabel UTP/STP",
+          file: "kabel_utp_stp.glb",
+          desc: "Kabel tembaga berpilin untuk jaringan. STP memiliki pelindung tambahan terhadap gangguan sinyal.",
+        },
+        {
+          name: "Network Interface Card (NIC)",
+          file: "network_interface_card.glb",
+          desc: "Kartu jaringan yang memungkinkan komputer terhubung ke jaringan, lewat kabel maupun nirkabel.",
+        },
+        {
+          name: "Hub",
+          file: "hub.glb",
+          desc: "Menyebarkan data ke semua port tanpa memilah tujuan, sehingga kurang efisien dibanding switch.",
+        },
+        {
+          name: "Kabel Fiber Optik",
+          file: "kabel_fiber.glb",
+          desc: "Mengirim data berupa cahaya melalui serat kaca, sehingga cepat dan tahan gangguan elektromagnetik.",
+        },
+      ];
 
       window.addEventListener("load", () => {
         const scene = document.querySelector("a-scene");
+        const viewer = document.getElementById("viewer");
+        const hint = document.getElementById("hint");
+        const mv = document.getElementById("mv");
+        const vTitle = document.getElementById("vTitle");
+        const vDesc = document.getElementById("vDesc");
+        const btnClose = document.getElementById("btnClose");
+
+        let locked = false;
+        const sys = () => scene.systems["mindar-image-system"];
+
+        function openViewer(i) {
+          const d = DEVICES[i];
+          if (!d || locked) return;
+          locked = true;
+
+          // Bekukan kamera di frame terakhir & hentikan pelacakan
+          try {
+            sys().pause();
+          } catch (e) {
+            console.warn("pause gagal", e);
+          }
+
+          vTitle.textContent = d.name;
+          vDesc.textContent = d.desc;
+          mv.setAttribute("src", d.file);
+          viewer.hidden = false;
+          hint.style.display = "none";
+        }
+
+        function closeViewer() {
+          viewer.hidden = true;
+          mv.removeAttribute("src");
+          hint.style.display = "";
+          try {
+            sys().unpause();
+          } catch (e) {
+            console.warn("unpause gagal", e);
+          }
+          setTimeout(() => {
+            locked = false;
+          }, 1000);
+        }
 
         document.querySelectorAll("[mindar-image-target]").forEach((el, i) => {
-          el.addEventListener("targetFound", () =>
-            log("TARGET DITEMUKAN: index " + i),
-          );
-          el.addEventListener("targetLost", () =>
-            log("target hilang: index " + i),
-          );
+          el.addEventListener("targetFound", () => openViewer(i));
         });
 
-        document.querySelectorAll("a-gltf-model").forEach((m) => {
-          const name = m.getAttribute("src");
-          m.addEventListener("model-loaded", () => log("model OK: " + name));
-          m.addEventListener("model-error", () => log("MODEL GAGAL: " + name));
-        });
-
-        scene.addEventListener("arReady", () =>
-          log("AR siap, arahkan ke marker"),
-        );
-        scene.addEventListener("arError", () =>
-          log("AR ERROR (cek izin kamera / targets.mind)"),
-        );
+        btnClose.addEventListener("click", closeViewer);
       });
     </script>
   </body>
