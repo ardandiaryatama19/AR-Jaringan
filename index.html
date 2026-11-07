@@ -13,6 +13,11 @@
     ></script>
 
     <style>
+      :root {
+        /* Warna latar viewer: abu-abu semi-transparan.
+           Lebih terang = angka RGB dinaikkan; lebih transparan = angka terakhir diturunkan. */
+        --viewer-bg: rgba(115, 121, 131, 0.85);
+      }
       body {
         margin: 0;
         overflow: hidden;
@@ -47,9 +52,9 @@
         z-index: 100;
         display: flex;
         flex-direction: column;
-        background: rgba(10, 15, 25, 0.72);
-        backdrop-filter: blur(6px);
-        -webkit-backdrop-filter: blur(6px);
+        background: var(--viewer-bg);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
         color: #fff;
       }
       #viewer[hidden] {
@@ -66,12 +71,13 @@
       .v-head h1 {
         margin: 0;
         font-size: 20px;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
       }
       .v-head p {
         margin: 4px 0 0;
         font-size: 13px;
-        opacity: 0.85;
         line-height: 1.4;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
       }
 
       #btnClose {
@@ -90,13 +96,72 @@
         width: 100%;
         min-height: 0;
         --poster-color: transparent;
+        --progress-bar-color: #fff;
+        --progress-bar-height: 5px;
         background: transparent;
+        transition: opacity 0.25s;
+      }
+      /* Model disembunyikan selama loading supaya model lama tidak sempat terlihat */
+      model-viewer.is-loading {
+        opacity: 0;
       }
       .v-foot {
         text-align: center;
         font-size: 12px;
-        opacity: 0.75;
         padding: 6px 0 14px;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+      }
+
+      /* Loading putih */
+      #loader {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        pointer-events: none;
+        color: #fff;
+        font-size: 14px;
+        font-weight: 600;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+      }
+      #loader[hidden] {
+        display: none;
+      }
+      .spinner {
+        width: 48px;
+        height: 48px;
+        border: 5px solid rgba(255, 255, 255, 0.35);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: spin 0.9s linear infinite;
+      }
+      .l-bar {
+        width: 60%;
+        max-width: 260px;
+        height: 6px;
+        border-radius: 3px;
+        background: rgba(255, 255, 255, 0.35);
+        overflow: hidden;
+      }
+      .l-bar i {
+        display: block;
+        height: 100%;
+        width: 0;
+        background: #fff;
+        transition: width 0.15s;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .spinner {
+          animation-duration: 2.5s;
+        }
       }
       #arBtn {
         position: absolute;
@@ -160,11 +225,18 @@
         alt="Model 3D perangkat jaringan"
       ></model-viewer>
 
+      <div id="loader" hidden>
+        <div class="spinner"></div>
+        <div class="l-bar"><i id="lBar"></i></div>
+        <div id="lText">Memuat model 3D…</div>
+      </div>
+
       <div class="v-foot">Geser untuk memutar · Cubit untuk zoom</div>
     </div>
 
     <script>
       // Urutan harus sama dengan targetIndex 0..7
+      // (index 7 = Kabel Fiber, harus berada di urutan ke-8 di targets.mind)
       const DEVICES = [
         {
           name: "Switch",
@@ -216,6 +288,30 @@
         const vTitle = document.getElementById("vTitle");
         const vDesc = document.getElementById("vDesc");
         const btnClose = document.getElementById("btnClose");
+        const loader = document.getElementById("loader");
+        const lBar = document.getElementById("lBar");
+        const lText = document.getElementById("lText");
+
+        function setLoading(on, text) {
+          loader.hidden = !on;
+          mv.classList.toggle("is-loading", on);
+          if (on) {
+            lBar.style.width = "0%";
+            lText.textContent = text || "Memuat model 3D…";
+          }
+        }
+
+        mv.addEventListener("progress", (e) => {
+          const p = Math.round((e.detail.totalProgress || 0) * 100);
+          lBar.style.width = p + "%";
+          lText.textContent = "Memuat model 3D… " + p + "%";
+        });
+        mv.addEventListener("load", () => setLoading(false));
+        mv.addEventListener("error", () => {
+          loader.hidden = false;
+          loader.querySelector(".spinner").style.display = "none";
+          lText.textContent = "Model gagal dimuat. Tekan “Scan lagi”.";
+        });
 
         let locked = false;
         const sys = () => scene.systems["mindar-image-system"];
@@ -234,14 +330,18 @@
 
           vTitle.textContent = d.name;
           vDesc.textContent = d.desc;
-          mv.setAttribute("src", d.file);
+          loader.querySelector(".spinner").style.display = "";
+          setLoading(true);
           viewer.hidden = false;
           hint.style.display = "none";
+          mv.removeAttribute("src"); // pastikan model sebelumnya hilang
+          mv.setAttribute("src", d.file);
         }
 
         function closeViewer() {
           viewer.hidden = true;
           mv.removeAttribute("src");
+          setLoading(false);
           hint.style.display = "";
           try {
             sys().unpause();
